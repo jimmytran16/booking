@@ -10,6 +10,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 
 
@@ -25,6 +28,9 @@ import { MatChipsModule } from '@angular/material/chips';
     MatInputModule, 
     MatDatepickerModule, 
     MatNativeDateModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
     MatChipsModule
   ],
   providers: [MatDatepickerModule, provideAnimationsAsync()],
