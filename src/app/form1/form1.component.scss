@@ -1,0 +1,18 @@
+.app {
+    &-datePicker {
+       text-align: center;
+    }
+    &-chipOption {
+       width: 200px!important;
+    }
+    &-optionWrapper {
+       flex-direction: row;
+       display: flex;
+       width: 100%!important;
+       flex-wrap: wrap;
+       justify-content: center;
+    }
+    &-submitBtn {
+      text-align: center;
+    }
+   }

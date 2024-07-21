@@ -1,0 +1,84 @@
+  <div class="appointmentForm-title">Designer Nail Salon</div>
+  <mat-stepper linear #stepper>
+    <mat-step [stepControl]="staffForm" [editable]="isEditable">
+      <form [formGroup]="staffForm">
+        <ng-template matStepLabel>Choose Staff</ng-template>
+        <div class="appointmentForm-title">Choose who to schedule with:</div>
+        <mat-chip-listbox formControlName="worker" class="mat-mdc-chip-set-stacked" aria-label="Available ">
+            <div class="appointmentForm-optionWrapper">
+              @for (staffName of staffNames; track staffName) {
+                <mat-chip-option class="appointmentForm-chipOption">{{staffName}}</mat-chip-option>
+              }
+            </div>
+          </mat-chip-listbox>
+        <div>
+          <button mat-button matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+    <mat-step [stepControl]="serviceForm" [editable]="isEditable">
+      <form [formGroup]="serviceForm">
+        <ng-template matStepLabel>Choose Service</ng-template>
+        <div class="appointmentForm-title">Choose Service(s):</div>
+        <mat-chip-listbox [multiple]="true" formControlName="services" class="mat-mdc-chip-set-stacked" aria-label="Available ">
+            <div class="appointmentForm-optionWrapper">
+              @for (service of services; track service) {
+                <mat-chip-option class="appointmentForm-chipOption">{{service}}</mat-chip-option>
+              }
+            </div>
+          </mat-chip-listbox>
+        <div>
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-button matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+
+    <mat-step [stepControl]="timeForm" [editable]="isEditable">
+        <form [formGroup]="timeForm">
+          <ng-template matStepLabel>Choose Time</ng-template>
+        <div class="appointmentForm-title">Choose Time:</div>
+          <mat-chip-listbox formControlName="time" class="mat-mdc-chip-set-stacked" aria-label="Available ">
+              <div class="appointmentForm-optionWrapper">
+                @for (availableTime of availableTimes; track availableTime) {
+                  <mat-chip-option class="appointmentForm-chipOption">{{availableTime}}</mat-chip-option>
+                }
+              </div>
+            </mat-chip-listbox>
+          <div>
+            <button mat-button matStepperPrevious>Back</button>
+            <button mat-button matStepperNext>Next</button>
+          </div>
+        </form>
+      </mat-step>
+      <mat-step [stepControl]="infoForm" [editable]="isEditable">
+        <form [formGroup]="infoForm">
+          <ng-template matStepLabel>Fill out your information</ng-template>
+          <div class="appointmentForm-title">Fill out your information:</div>
+          <div class="appointmentForm-infoWrapper">
+            <mat-form-field class="example-full-width">
+                <mat-label>Name</mat-label>
+                <input formControlName="name" type="text" placeholder="Please enter your name" matInput>
+              </mat-form-field>
+              <mat-form-field class="example-full-width">
+                <mat-label>Phone number</mat-label>
+                <span matTextPrefix>+1 &nbsp;</span>
+                <input minlength="10" maxlength="10" formControlName="number" type="tel" matInput placeholder="555-555-1234" [required]="true"> 
+                <mat-icon matSuffix>mode_edit</mat-icon>
+              </mat-form-field>
+          </div>
+          <div>
+            <button mat-button matStepperPrevious>Back</button>
+            <button [disabled]="!isValidForm" (click)="submit()" mat-button>Submit</button>
+          </div>
+        </form>
+      </mat-step>
+    <mat-step>
+      <ng-template matStepLabel>Done</ng-template>
+      <p>You have been booked! We will see you soon</p>
+      <div>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button (click)="stepper.reset()">Reset</button>
+      </div>
+    </mat-step>
+  </mat-stepper>

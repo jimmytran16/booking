@@ -1,12 +1,12 @@
-import { Component } from "@angular/core";
-import { FormControl, FormGroup, Validators } from "@angular/forms";
+import { Component } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  selector: 'app-form1',
+  templateUrl: './form1.component.html',
+  styleUrl: './form1.component.scss'
 })
-export class AppComponent {
+export class Form1Component {
   title = 'dns-scheduling-app';
   appointmentForm: FormGroup = new FormGroup({
     phoneNumber: new FormControl("", Validators.required),

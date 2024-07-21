@@ -13,15 +13,20 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Form1Component } from './form1/form1.component';
+import { AppointmentFormComponent } from './appointment-form/appointment-form.component';
+import { MatStepperModule } from '@angular/material/stepper';
 
 
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, Form1Component, AppointmentFormComponent],
   imports: [
     CommonModule,
     BrowserModule,
     RouterOutlet, 
+    ReactiveFormsModule,
     BrowserAnimationsModule,
     MatDatepickerModule, 
     MatFormFieldModule, 
@@ -31,7 +36,9 @@ import { MatIconModule } from '@angular/material/icon';
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
-    MatChipsModule
+    MatChipsModule,
+    MatStepperModule,
+    FormsModule,
   ],
   providers: [MatDatepickerModule, provideAnimationsAsync()],
   bootstrap: [AppComponent]
