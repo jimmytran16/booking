@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { AppointmentData, ConfirmationApiService } from '../confirmation-api.service';
 
 @Component({
   selector: 'app-appointment-form',
@@ -20,23 +21,28 @@ export class AppointmentFormComponent {
     services: [[], Validators.required],
   });
   timeForm = this.fb.group({
-    time: [[], Validators.required],
+    time: ["", Validators.required],
   });
   infoForm = this.fb.group({
     name: ["", Validators.required],
     number: ["", [Validators.required, Validators.pattern('^[- +()0-9]+$')]],
   });
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private confirmationService: ConfirmationApiService) {}
 
   get isValidForm(): boolean{
     return this.staffForm.valid && this.serviceForm.valid && this.timeForm.valid && this.infoForm.valid;
   }
 
   submit(): void {
-    console.log(this.staffForm.getRawValue());
-    console.log(this.serviceForm.getRawValue());
-    console.log(this.timeForm.getRawValue());
-    console.log(this.infoForm.getRawValue());
+    const payload: AppointmentData = {
+      name: this.infoForm.get('name')?.value ?? "",
+      number: this.infoForm.get('number')?.value ?? "",
+      services: this.serviceForm.get('services')?.value ?? [],
+      time: this.timeForm.get('time')?.value ?? "",
+      worker: this.staffForm.get('worker')?.value ?? "",
+    }
+
+    this.confirmationService.appointmentSubmit(payload).subscribe()
   }
 
    // Generate an array of available times for the day

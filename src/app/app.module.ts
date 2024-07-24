@@ -17,6 +17,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Form1Component } from './form1/form1.component';
 import { AppointmentFormComponent } from './appointment-form/appointment-form.component';
 import { MatStepperModule } from '@angular/material/stepper';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { JwtInterceptor } from './token-interceptor';
 
 
 
@@ -39,8 +41,13 @@ import { MatStepperModule } from '@angular/material/stepper';
     MatChipsModule,
     MatStepperModule,
     FormsModule,
+    HttpClientModule
   ],
-  providers: [MatDatepickerModule, provideAnimationsAsync()],
+  providers: [MatDatepickerModule, provideAnimationsAsync(), {
+    provide: HTTP_INTERCEPTORS,
+    useClass: JwtInterceptor,
+    multi: true
+  }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
