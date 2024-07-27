@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { AppointmentData, ConfirmationApiService } from '../confirmation-api.service';
 
 @Component({
@@ -7,11 +7,11 @@ import { AppointmentData, ConfirmationApiService } from '../confirmation-api.ser
   templateUrl: './appointment-form.component.html',
   styleUrl: './appointment-form.component.scss'
 })
-export class AppointmentFormComponent {
+export class AppointmentFormComponent implements OnInit {
   // NOTE: data will come from DB
   readonly staffNames: string[] = ["Anyone","Julie", "Jenny", "JJ"]
   readonly services: string[] = ["Manicure ($45) - 30 minutes", "Pedicure ($45) - 30 minutes", "Dip ($45) - 30 minutes"]
-  readonly availableTimes: string[] = this.generateTimeAvailibilities();
+  readonly availableTimes: string[] = this.generateTimeAvailibilities()
   readonly isEditable = true;
   
   staffForm = this.fb.group({
@@ -21,16 +21,40 @@ export class AppointmentFormComponent {
     services: [[], Validators.required],
   });
   timeForm = this.fb.group({
+    dateSelected : ['', Validators.required],
     time: ["", Validators.required],
   });
   infoForm = this.fb.group({
-    name: ["", Validators.required],
-    number: ["", [Validators.required, Validators.pattern('^[- +()0-9]+$')]],
+    name: ["jimmy tran", Validators.required],
+    number: ["7812671202", [Validators.required, Validators.pattern('^[- +()0-9]+$')]],
   });
+  
+  unavailableTimes: string[] = []
   constructor(private fb: FormBuilder, private confirmationService: ConfirmationApiService) {}
 
+  ngOnInit(): void {
+    this.timeForm.get('dateSelected')?.valueChanges.subscribe(v => {
+      // Call API to get availibilities
+      console.log(v)
+      const staff = this.staffForm.get('worker')?.value;
+      if (staff && v) {
+        this.confirmationService.getUnavailabilities(v, staff).subscribe(response => {
+          if (response.success == true)
+            this.unavailableTimes = response.unavailables;
+          else 
+            this.unavailableTimes = [];
+        }) 
+      }
+    })
+  }
+
+  
   get isValidForm(): boolean{
     return this.staffForm.valid && this.serviceForm.valid && this.timeForm.valid && this.infoForm.valid;
+  }
+  
+  isUnavailable(time: string): boolean {
+    return this.unavailableTimes.includes(time)
   }
 
   submit(): void {
@@ -40,6 +64,7 @@ export class AppointmentFormComponent {
       services: this.serviceForm.get('services')?.value ?? [],
       time: this.timeForm.get('time')?.value ?? "",
       worker: this.staffForm.get('worker')?.value ?? "",
+      date: this.timeForm.get('dateSelected')?.value ?? ""
     }
 
     this.confirmationService.appointmentSubmit(payload).subscribe()
@@ -57,6 +82,8 @@ export class AppointmentFormComponent {
       })
     })
 
+
+    console.log('availibleTimes',availibleTimes)
     return availibleTimes;
   }
 

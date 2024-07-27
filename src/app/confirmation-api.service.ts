@@ -7,12 +7,18 @@ export interface TokenResponse {
   success: boolean;
 }
 
+export interface AppointmentResponse {
+  success: boolean;
+  unavailables: string[]
+}
+
 export interface AppointmentData {
   worker: string;
   services: string[];
   time: string;
   name: string;
   number: string;
+  date: string;
 }
 
 @Injectable({
@@ -29,5 +35,9 @@ export class ConfirmationApiService {
 
   appointmentSubmit(data: AppointmentData): Observable<any> {
     return this.http.post('http://localhost:5000/appointmentSubmission', data);
+  } 
+
+  getUnavailabilities(date: string, staff: string): Observable<AppointmentResponse> {
+    return this.http.post<AppointmentResponse>(`http://localhost:5000/getUnavailabilities`, { date: date, staff: staff });
   } 
 }

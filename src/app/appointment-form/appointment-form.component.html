@@ -35,15 +35,24 @@
     </mat-step>
 
     <mat-step [stepControl]="timeForm" [editable]="isEditable">
-        <form [formGroup]="timeForm">
+      <form [formGroup]="timeForm">
+          <div class="app-datePicker">
+            <mat-form-field>
+              <mat-label>Choose a date</mat-label>
+              <input matInput formControlName="dateSelected" [matDatepicker]="picker">
+              <mat-hint>MM/DD/YYYY</mat-hint>
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field> 
+          </div>
           <ng-template matStepLabel>Choose Time</ng-template>
         <div class="appointmentForm-title">Choose Time:</div>
           <mat-chip-listbox formControlName="time" class="mat-mdc-chip-set-stacked" aria-label="Available ">
               <div class="appointmentForm-optionWrapper">
                 @for (availableTime of availableTimes; track availableTime) {
-                  <mat-chip-option class="appointmentForm-chipOption">{{availableTime}}</mat-chip-option>
+                  <mat-chip-option [disabled]="isUnavailable(availableTime)" class="appointmentForm-chipOption">{{availableTime}}</mat-chip-option>
                 }
-              </div>
+              </div>  
             </mat-chip-listbox>
           <div>
             <button mat-button matStepperPrevious>Back</button>
