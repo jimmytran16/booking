@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { AppointmentData, ConfirmationApiService } from '../confirmation-api.service';
+import { combineLatest, combineLatestAll, finalize, forkJoin, map, merge, startWith } from 'rxjs';
+import { MatStepper } from '@angular/material/stepper';
 
 @Component({
   selector: 'app-appointment-form',
@@ -9,10 +11,10 @@ import { AppointmentData, ConfirmationApiService } from '../confirmation-api.ser
 })
 export class AppointmentFormComponent implements OnInit {
   // NOTE: data will come from DB
-  readonly staffNames: string[] = ["Anyone","Julie", "Jenny", "JJ"]
+  readonly staffNames: string[] = ["Anyone","Julie", "Jenny", "JJ"];
   readonly services: string[] = ["Manicure ($45) - 30 minutes", "Pedicure ($45) - 30 minutes", "Dip ($45) - 30 minutes"]
-  readonly availableTimes: string[] = this.generateTimeAvailibilities()
-  readonly isEditable = true;
+  readonly availableTimes: string[] = this.generateTimeAvailibilities();
+  readonly startDate = this.getTodaysDateMidnightTime()
   
   staffForm = this.fb.group({
     worker: ['', Validators.required],
@@ -21,34 +23,42 @@ export class AppointmentFormComponent implements OnInit {
     services: [[], Validators.required],
   });
   timeForm = this.fb.group({
-    dateSelected : ['', Validators.required],
+    dateSelected : [this.startDate, Validators.required],
     time: ["", Validators.required],
   });
   infoForm = this.fb.group({
     name: ["jimmy tran", Validators.required],
-    number: ["7812671202", [Validators.required, Validators.pattern('^[- +()0-9]+$')]],
+    number: ["1111111111", [Validators.required, Validators.pattern('^[- +()0-9]+$')]],
   });
   
   unavailableTimes: string[] = []
-  constructor(private fb: FormBuilder, private confirmationService: ConfirmationApiService) {}
+  isLoading = false;
+  isCompleted = false;
+  constructor(private fb: FormBuilder, private confirmationService: ConfirmationApiService, private cd: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.timeForm.get('dateSelected')?.valueChanges.subscribe(v => {
-      // Call API to get availibilities
-      console.log(v)
-      const staff = this.staffForm.get('worker')?.value;
-      if (staff && v) {
-        this.confirmationService.getUnavailabilities(v, staff).subscribe(response => {
-          if (response.success == true)
-            this.unavailableTimes = response.unavailables;
-          else 
-            this.unavailableTimes = [];
-        }) 
-      }
-    })
+    combineLatest(
+      [this.staffForm.get('worker')?.valueChanges.pipe(startWith("")), 
+        this.timeForm.get('dateSelected')?.valueChanges.pipe(startWith(this.getTodaysDateMidnightTime()))])
+        .subscribe((response: any[]) => {
+          if (response && response.length > 1) {
+            const staff = response[0];
+            const dateSelected = response[1];
+            if (staff && dateSelected) {
+              this.isLoading = true;
+              this.confirmationService.getUnavailabilities(dateSelected, staff)
+              .pipe(finalize(() => this.isLoading = false))
+              .subscribe(response => {
+                if (response.success == true)
+                  this.unavailableTimes = response.unavailables;
+                else 
+                  this.unavailableTimes = [];
+              }) 
+            }
+          }
+        });
   }
 
-  
   get isValidForm(): boolean{
     return this.staffForm.valid && this.serviceForm.valid && this.timeForm.valid && this.infoForm.valid;
   }
@@ -57,7 +67,7 @@ export class AppointmentFormComponent implements OnInit {
     return this.unavailableTimes.includes(time)
   }
 
-  submit(): void {
+  submit(stepper: MatStepper): void {
     const payload: AppointmentData = {
       name: this.infoForm.get('name')?.value ?? "",
       number: this.infoForm.get('number')?.value ?? "",
@@ -67,7 +77,11 @@ export class AppointmentFormComponent implements OnInit {
       date: this.timeForm.get('dateSelected')?.value ?? ""
     }
 
-    this.confirmationService.appointmentSubmit(payload).subscribe()
+    this.confirmationService.appointmentSubmit(payload).subscribe(() => {
+      // handle error validation
+      this.isCompleted = true;
+      stepper.next();
+    })
   }
 
    // Generate an array of available times for the day
@@ -81,9 +95,6 @@ export class AppointmentFormComponent implements OnInit {
         availibleTimes.push(`${h}:${m == 0 ? "00": m} ${this.getAMOrPM(h)}`)
       })
     })
-
-
-    console.log('availibleTimes',availibleTimes)
     return availibleTimes;
   }
 
@@ -91,5 +102,11 @@ export class AppointmentFormComponent implements OnInit {
     return time >= 9 && time < 12 
       ? "AM"
       : "PM"
+  }
+
+  private getTodaysDateMidnightTime(): string {
+    var date = new Date();
+    date.setHours(0,0,0,0);
+    return date.toISOString();
   }
 }

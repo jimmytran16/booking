@@ -1,6 +1,6 @@
   <div class="appointmentForm-title">Designer Nail Salon</div>
   <mat-stepper linear #stepper>
-    <mat-step [stepControl]="staffForm" [editable]="isEditable">
+    <mat-step [stepControl]="staffForm" [editable]="!isCompleted">
       <form [formGroup]="staffForm">
         <ng-template matStepLabel>Choose Staff</ng-template>
         <div class="appointmentForm-title">Choose who to schedule with:</div>
@@ -16,7 +16,7 @@
         </div>
       </form>
     </mat-step>
-    <mat-step [stepControl]="serviceForm" [editable]="isEditable">
+    <mat-step [stepControl]="serviceForm" [editable]="!isCompleted">
       <form [formGroup]="serviceForm">
         <ng-template matStepLabel>Choose Service</ng-template>
         <div class="appointmentForm-title">Choose Service(s):</div>
@@ -34,7 +34,7 @@
       </form>
     </mat-step>
 
-    <mat-step [stepControl]="timeForm" [editable]="isEditable">
+    <mat-step [stepControl]="timeForm" [editable]="!isCompleted">
       <form [formGroup]="timeForm">
           <div class="app-datePicker">
             <mat-form-field>
@@ -47,7 +47,8 @@
           </div>
           <ng-template matStepLabel>Choose Time</ng-template>
         <div class="appointmentForm-title">Choose Time:</div>
-          <mat-chip-listbox formControlName="time" class="mat-mdc-chip-set-stacked" aria-label="Available ">
+        <mat-spinner *ngIf="isLoading"></mat-spinner>
+          <mat-chip-listbox *ngIf="!isLoading" formControlName="time" class="mat-mdc-chip-set-stacked" aria-label="Available ">
               <div class="appointmentForm-optionWrapper">
                 @for (availableTime of availableTimes; track availableTime) {
                   <mat-chip-option [disabled]="isUnavailable(availableTime)" class="appointmentForm-chipOption">{{availableTime}}</mat-chip-option>
@@ -60,7 +61,7 @@
           </div>
         </form>
       </mat-step>
-      <mat-step [stepControl]="infoForm" [editable]="isEditable">
+      <mat-step [stepControl]="infoForm" [editable]="!isCompleted">
         <form [formGroup]="infoForm">
           <ng-template matStepLabel>Fill out your information</ng-template>
           <div class="appointmentForm-title">Fill out your information:</div>
@@ -78,7 +79,7 @@
           </div>
           <div>
             <button mat-button matStepperPrevious>Back</button>
-            <button [disabled]="!isValidForm" (click)="submit()" mat-button>Submit</button>
+            <button [disabled]="!isValidForm" (click)="submit(stepper)" mat-button>Submit</button>
           </div>
         </form>
       </mat-step>

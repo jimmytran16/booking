@@ -19,6 +19,7 @@ import { AppointmentFormComponent } from './appointment-form/appointment-form.co
 import { MatStepperModule } from '@angular/material/stepper';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { JwtInterceptor } from './token-interceptor';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 
 
@@ -41,6 +42,7 @@ import { JwtInterceptor } from './token-interceptor';
     MatChipsModule,
     MatStepperModule,
     FormsModule,
+    MatProgressSpinnerModule,
     HttpClientModule
   ],
   providers: [MatDatepickerModule, provideAnimationsAsync(), {
