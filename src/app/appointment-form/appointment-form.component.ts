@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, Validators } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { AppointmentData, ConfirmationApiService } from '../confirmation-api.service';
-import { combineLatest, combineLatestAll, finalize, forkJoin, map, merge, startWith } from 'rxjs';
+import { finalize, startWith, Subject } from 'rxjs';
 import { MatStepper } from '@angular/material/stepper';
 
 @Component({
@@ -32,39 +32,58 @@ export class AppointmentFormComponent implements OnInit {
   });
   
   unavailableTimes: string[] = []
+  previouslySelectedStaff = "";
+  onTimeStepChange = new Subject();
   isLoading = false;
   isCompleted = false;
   constructor(private fb: FormBuilder, private confirmationService: ConfirmationApiService, private cd: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    combineLatest(
-      [this.staffForm.get('worker')?.valueChanges.pipe(startWith("")), 
-        this.timeForm.get('dateSelected')?.valueChanges.pipe(startWith(this.getTodaysDateMidnightTime()))])
-        .subscribe((response: any[]) => {
-          if (response && response.length > 1) {
-            const staff = response[0];
-            const dateSelected = response[1];
-            if (staff && dateSelected) {
-              this.isLoading = true;
-              this.confirmationService.getUnavailabilities(dateSelected, staff)
-              .pipe(finalize(() => this.isLoading = false))
-              .subscribe(response => {
-                if (response.success == true)
-                  this.unavailableTimes = response.unavailables;
-                else 
-                  this.unavailableTimes = [];
-              }) 
-            }
-          }
-        });
+    this.timeForm.get('dateSelected')?.valueChanges.pipe(startWith(this.getTodaysDateMidnightTime()))
+      .subscribe(date => {
+        const staff = this.staffForm.get('worker')?.value;
+        if (date && staff) {
+          this.getUnavailables(date, staff);
+        }
+      })
+    this.onTimeStepChange.asObservable().subscribe(() => {
+      const staff = this.staffForm.get('worker')?.value;
+      const staffHasChanged = this.previouslySelectedStaff != staff;
+      const date = this.timeForm.get('dateSelected')?.value;
+      if (staffHasChanged && date && staff) {
+        this.previouslySelectedStaff = staff;
+        this.getUnavailables(date, staff);
+      }
+    })
   }
 
   get isValidForm(): boolean{
     return this.staffForm.valid && this.serviceForm.valid && this.timeForm.valid && this.infoForm.valid;
   }
+
+  getUnavailables(dateSelected: string, staff: string): void {
+    this.isLoading = true;
+    this.confirmationService.getUnavailabilities(dateSelected, staff)
+    .pipe(finalize(() => this.isLoading = false))
+    .subscribe(response => {
+      if (response.success == true){
+        this.timeForm.get('time')?.patchValue("");
+        this.unavailableTimes = response.unavailables;
+      }
+      else {
+        this.unavailableTimes = [];
+      }
+    }) 
+  }
   
   isUnavailable(time: string): boolean {
     return this.unavailableTimes.includes(time)
+  }
+
+  onStepChange(event: any): void {
+    if (event?.selectedIndex == 2) {
+      this.onTimeStepChange.next(1);
+    }
   }
 
   submit(stepper: MatStepper): void {

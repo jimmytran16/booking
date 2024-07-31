@@ -1,5 +1,5 @@
   <div class="appointmentForm-title">Designer Nail Salon</div>
-  <mat-stepper linear #stepper>
+  <mat-stepper (selectionChange)="onStepChange($event)" linear #stepper>
     <mat-step [stepControl]="staffForm" [editable]="!isCompleted">
       <form [formGroup]="staffForm">
         <ng-template matStepLabel>Choose Staff</ng-template>
@@ -86,9 +86,5 @@
     <mat-step>
       <ng-template matStepLabel>Done</ng-template>
       <p>You have been booked! We will see you soon</p>
-      <div>
-        <button mat-button matStepperPrevious>Back</button>
-        <button mat-button (click)="stepper.reset()">Reset</button>
-      </div>
     </mat-step>
   </mat-stepper>
