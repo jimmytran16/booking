@@ -12,6 +12,11 @@ export interface AppointmentResponse {
   unavailables: string[]
 }
 
+export interface ServiceResponse {
+  success: boolean;
+  services: Service[];
+}
+
 export interface AppointmentData {
   worker: string;
   services: string[];
@@ -20,6 +25,14 @@ export interface AppointmentData {
   number: string;
   date: string;
 }
+
+export interface Service {
+  _id: any;
+  category: string;
+  cost: number;
+  name: string;
+  required_time: number;
+} 
 
 @Injectable({
   providedIn: 'root'
@@ -33,11 +46,16 @@ export class ConfirmationApiService {
       .pipe(map(response => response.accessToken))
   }
 
+  getServices(): Observable<Service[]> {
+    return this.http.get<ServiceResponse>('http://localhost:5000/getServices')
+      .pipe(map(response => response.services))
+  }
+
   appointmentSubmit(data: AppointmentData): Observable<any> {
     return this.http.post('http://localhost:5000/appointmentSubmission', data);
   } 
 
-  getUnavailabilities(date: string, staff: string): Observable<AppointmentResponse> {
-    return this.http.post<AppointmentResponse>(`http://localhost:5000/getUnavailabilities`, { date: date, staff: staff });
+  getUnavailabilities(date: string, staff: string, requestedTime: number): Observable<AppointmentResponse> {
+    return this.http.post<AppointmentResponse>(`http://localhost:5000/getUnavailabilities`, { date: date, staff: staff, requested_time: requestedTime});
   } 
 }

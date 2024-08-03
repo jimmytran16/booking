@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { AppointmentData, ConfirmationApiService } from '../confirmation-api.service';
+import { AppointmentData, ConfirmationApiService, Service } from '../confirmation-api.service';
 import { finalize, startWith, Subject } from 'rxjs';
 import { MatStepper } from '@angular/material/stepper';
 
@@ -12,9 +12,8 @@ import { MatStepper } from '@angular/material/stepper';
 export class AppointmentFormComponent implements OnInit {
   // NOTE: data will come from DB
   readonly staffNames: string[] = ["Anyone","Julie", "Jenny", "JJ"];
-  readonly services: string[] = ["Manicure ($45) - 30 minutes", "Pedicure ($45) - 30 minutes", "Dip ($45) - 30 minutes"]
   readonly availableTimes: string[] = this.generateTimeAvailibilities();
-  readonly startDate = this.getTodaysDateMidnightTime()
+  readonly startDate = this.getTodaysDateMidnightTime();
   
   staffForm = this.fb.group({
     worker: ['', Validators.required],
@@ -31,28 +30,39 @@ export class AppointmentFormComponent implements OnInit {
     number: ["1111111111", [Validators.required, Validators.pattern('^[- +()0-9]+$')]],
   });
   
-  unavailableTimes: string[] = []
+  services: Service[] = []
+  unavailableTimes: string[] = [];
   previouslySelectedStaff = "";
+  previouslySelectedServices = [];
   onTimeStepChange = new Subject();
   isLoading = false;
   isCompleted = false;
-  constructor(private fb: FormBuilder, private confirmationService: ConfirmationApiService, private cd: ChangeDetectorRef) {}
+  constructor(private fb: FormBuilder, private confirmationService: ConfirmationApiService) {}
 
   ngOnInit(): void {
+    this.confirmationService.getServices().subscribe((services: Service[]) => {
+      this.services = services;
+    })
+    // listener for date selection
     this.timeForm.get('dateSelected')?.valueChanges.pipe(startWith(this.getTodaysDateMidnightTime()))
       .subscribe(date => {
         const staff = this.staffForm.get('worker')?.value;
-        if (date && staff) {
-          this.getUnavailables(date, staff);
+        const services = this.serviceForm.get('services')?.value;
+        if (date && staff && services) {
+          this.getUnavailables(date, staff, this.getTotalTimeByService(services));
         }
       })
+      // listener for 3rd step
     this.onTimeStepChange.asObservable().subscribe(() => {
       const staff = this.staffForm.get('worker')?.value;
+      const services = this.serviceForm.get('services')?.value;
       const staffHasChanged = this.previouslySelectedStaff != staff;
+      const servicesHasChanged =  this.previouslySelectedServices.sort() != (services ?? [] as string[]).sort();
       const date = this.timeForm.get('dateSelected')?.value;
-      if (staffHasChanged && date && staff) {
+      if ((servicesHasChanged || staffHasChanged) && date && staff && services) {
         this.previouslySelectedStaff = staff;
-        this.getUnavailables(date, staff);
+        this.previouslySelectedServices = services ?? [];
+        this.getUnavailables(date, staff, this.getTotalTimeByService(services));
       }
     })
   }
@@ -61,9 +71,30 @@ export class AppointmentFormComponent implements OnInit {
     return this.staffForm.valid && this.serviceForm.valid && this.timeForm.valid && this.infoForm.valid;
   }
 
-  getUnavailables(dateSelected: string, staff: string): void {
+  private getTotalTimeByService(services: string[]): number {
+    const includedServices = this.services.filter(x => services.includes(x.name));
+    return includedServices.map(x => x.required_time).reduce((a, b) => a + b, 0);
+  }
+
+  arraysEqual(a: string[], b: string[]) {
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (a.length !== b.length) return false;
+  
+    // If you don't care about the order of the elements inside
+    // the array, you should sort both arrays here.
+    // Please note that calling sort on an array will modify that array.
+    // you might want to clone your array first.
+  
+    for (var i = 0; i < a.length; ++i) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
+  getUnavailables(dateSelected: string, staff: string, requested_time: number): void {
     this.isLoading = true;
-    this.confirmationService.getUnavailabilities(dateSelected, staff)
+    this.confirmationService.getUnavailabilities(dateSelected, staff, requested_time)
     .pipe(finalize(() => this.isLoading = false))
     .subscribe(response => {
       if (response.success == true){
@@ -103,6 +134,12 @@ export class AppointmentFormComponent implements OnInit {
     })
   }
 
+  getTodaysDateMidnightTime(): string {
+    var date = new Date();
+    date.setHours(0,0,0,0);
+    return date.toISOString();
+  }
+
    // Generate an array of available times for the day
   // NOTE: May need to fetch from DB that way we can munipulate the times if need be
   private generateTimeAvailibilities(): string[] {
@@ -121,11 +158,5 @@ export class AppointmentFormComponent implements OnInit {
     return time >= 9 && time < 12 
       ? "AM"
       : "PM"
-  }
-
-  private getTodaysDateMidnightTime(): string {
-    var date = new Date();
-    date.setHours(0,0,0,0);
-    return date.toISOString();
   }
 }
