@@ -64,7 +64,7 @@ export class AppointmentFormComponent implements OnInit {
       const date = this.timeForm.get('dateSelected')?.value;
       if ((servicesHasChanged || staffHasChanged) && date && staff && services) {
         this.previouslySelectedStaff = staff;
-        this.previouslySelectedServices = services ?? [];
+        this.previouslySelectedServices = [...services] ?? [];
         this.getUnavailables(date, staff, this.getTotalTimeByService(services));
       }
     })

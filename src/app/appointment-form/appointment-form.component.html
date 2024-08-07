@@ -45,7 +45,7 @@
           <!-- <mat-chip-listbox *ngIf="!isLoading" formControlName="time" class="mat-mdc-chip-set-stacked" aria-label="Available "> -->
               <div *ngIf="!isLoading" class="appointmentForm-timeWrapper">
                 @for (availableTime of availableTimes; track availableTime) {
-                  <app-time-card (click)="handleTimeSelection(availableTime)" [time]="availableTime" [selected]="timeForm.get('time')?.value == availableTime"></app-time-card>
+                  <app-time-card *ngIf="!isUnavailable(availableTime)" (click)="handleTimeSelection(availableTime)" [time]="availableTime" [selected]="timeForm.get('time')?.value == availableTime"></app-time-card>
                   <!-- <mat-chip-option [disabled]="isUnavailable(availableTime)" class="appointmentForm-chipOption">{{availableTime}}</mat-chip-option> -->
                 }
               </div>  
