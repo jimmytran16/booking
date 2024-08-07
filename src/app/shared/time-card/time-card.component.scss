@@ -1,0 +1,21 @@
+.TimeCard {
+    width: 75px;
+    padding: 5px;
+    height: 50px;
+    margin: 10px;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    display: flex;
+    &-selected {
+      border: #baba31 solid 3px;
+    }
+    &-unselected {
+      border: lightgrey solid 1px;
+    }
+  }
+  .TimeCard:hover {
+      background-color: #e6e6c5;
+  }
+  

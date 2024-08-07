@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { AppointmentData, ConfirmationApiService, Service } from '../confirmation-api.service';
 import { finalize, startWith, Subject } from 'rxjs';
@@ -19,7 +19,7 @@ export class AppointmentFormComponent implements OnInit {
     worker: ['', Validators.required],
   });
   serviceForm = this.fb.group({
-    services: [[], Validators.required],
+    services: [null],
   });
   timeForm = this.fb.group({
     dateSelected : [this.startDate, Validators.required],
@@ -33,10 +33,11 @@ export class AppointmentFormComponent implements OnInit {
   services: Service[] = []
   unavailableTimes: string[] = [];
   previouslySelectedStaff = "";
-  previouslySelectedServices = [];
+  previouslySelectedServices: string[] = [];
   onTimeStepChange = new Subject();
   isLoading = false;
   isCompleted = false;
+  private _selectedServices: string[] = []
   constructor(private fb: FormBuilder, private confirmationService: ConfirmationApiService) {}
 
   ngOnInit(): void {
@@ -47,7 +48,8 @@ export class AppointmentFormComponent implements OnInit {
     this.timeForm.get('dateSelected')?.valueChanges.pipe(startWith(this.getTodaysDateMidnightTime()))
       .subscribe(date => {
         const staff = this.staffForm.get('worker')?.value;
-        const services = this.serviceForm.get('services')?.value;
+        // const services = this.serviceForm.get('services')?.value;
+        const services = this.selectedServices;
         if (date && staff && services) {
           this.getUnavailables(date, staff, this.getTotalTimeByService(services));
         }
@@ -55,7 +57,8 @@ export class AppointmentFormComponent implements OnInit {
       // listener for 3rd step
     this.onTimeStepChange.asObservable().subscribe(() => {
       const staff = this.staffForm.get('worker')?.value;
-      const services = this.serviceForm.get('services')?.value;
+      // const services = this.serviceForm.get('services')?.value;
+      const services = this.selectedServices;
       const staffHasChanged = this.previouslySelectedStaff != staff;
       const servicesHasChanged =  this.previouslySelectedServices.sort() != (services ?? [] as string[]).sort();
       const date = this.timeForm.get('dateSelected')?.value;
@@ -71,25 +74,36 @@ export class AppointmentFormComponent implements OnInit {
     return this.staffForm.valid && this.serviceForm.valid && this.timeForm.valid && this.infoForm.valid;
   }
 
+  get selectedServices(): string[] {
+    return this._selectedServices;
+  }
+
   private getTotalTimeByService(services: string[]): number {
     const includedServices = this.services.filter(x => services.includes(x.name));
     return includedServices.map(x => x.required_time).reduce((a, b) => a + b, 0);
   }
 
-  arraysEqual(a: string[], b: string[]) {
-    if (a === b) return true;
-    if (a == null || b == null) return false;
-    if (a.length !== b.length) return false;
-  
-    // If you don't care about the order of the elements inside
-    // the array, you should sort both arrays here.
-    // Please note that calling sort on an array will modify that array.
-    // you might want to clone your array first.
-  
-    for (var i = 0; i < a.length; ++i) {
-      if (a[i] !== b[i]) return false;
-    }
-    return true;
+  handleProfessionalSelection(staffName: string): void {
+    this.staffForm.get('worker')?.patchValue(staffName ?? '');
+  }
+
+  handleServicesSelection(serviceName: string): void {
+
+    const selectedServies = this.selectedServices;
+    const index = selectedServies.indexOf(serviceName);
+    // Not in list, then add
+    if (index == -1) {
+      this._selectedServices.push(serviceName)
+    } else {
+      this._selectedServices.splice(index, 1);
+    } 
+    // Issue with patchValue -- getting TS2345: Argument of type 'string[]' is not assignable to parameter of type 'null'
+    // Workaround.. will just use this.selectedServices as state
+    // this.serviceForm.get('services')?.patchValue(this.selectedServices)
+  }
+
+  handleTimeSelection(timeSelected: string) {
+    this.timeForm.get('time')?.patchValue(timeSelected);
   }
 
   getUnavailables(dateSelected: string, staff: string, requested_time: number): void {
@@ -121,7 +135,7 @@ export class AppointmentFormComponent implements OnInit {
     const payload: AppointmentData = {
       name: this.infoForm.get('name')?.value ?? "",
       number: this.infoForm.get('number')?.value ?? "",
-      services: this.serviceForm.get('services')?.value ?? [],
+      services: this.selectedServices ?? [],
       time: this.timeForm.get('time')?.value ?? "",
       worker: this.staffForm.get('worker')?.value ?? "",
       date: this.timeForm.get('dateSelected')?.value ?? ""

@@ -1,0 +1,41 @@
+.ServiceCard {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border: lightgrey solid 1px;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 10px;
+    cursor: pointer;
+    &-nameTimeWrapper {
+        display: flex;
+        flex-direction: column;
+    }
+    &-time {
+        color: #929292;
+    }
+    &-selected {
+        border: #baba31 solid 3px;
+    }
+    &-unselected {
+        border: lightgrey solid 1px;
+    }
+    &-button {
+        align-self: center;
+    }
+    &-icon {
+        background-color: lightgrey;
+        padding: 5px;
+        border-radius: 10px;
+    }
+
+    &-iconSelected {
+        padding: 5px;
+        border-radius: 10px;
+        background-color: #baba31!important;
+    }
+}
+
+.ServiceCard:hover {
+    background-color: #e6e6c5;
+}

@@ -1,0 +1,14 @@
+<div class="{{ selectionOrNoSelectionClass }}">
+    <div class="ServiceCard-nameTimeWrapper">
+        <span>
+            {{ name }}
+            <p class="ServiceCard-time">{{ time }} min</p>
+        </span>
+        <span>
+            ${{ price }}
+        </span>
+    </div>
+    <div class="ServiceCard-button">
+        <mat-icon class="{{ selectedIconBackgroundColor }}" aria-hidden="false"  fontIcon="{{ selected ? 'check' : 'add' }}"></mat-icon>
+    </div>
+</div>

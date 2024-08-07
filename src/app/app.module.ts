@@ -20,11 +20,13 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { JwtInterceptor } from './token-interceptor';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
+import { ProfessionalCardsComponent } from './shared/professional-cards/professional-cards.component';
+import { ServiceCardComponent } from './shared/service-card/service-card.component';
+import { TimeCardComponent } from './shared/time-card/time-card.component';
 
 
 @NgModule({
-  declarations: [AppComponent, Form1Component, AppointmentFormComponent],
+  declarations: [AppComponent, Form1Component, AppointmentFormComponent, ProfessionalCardsComponent, ServiceCardComponent, TimeCardComponent],
   imports: [
     CommonModule,
     BrowserModule,

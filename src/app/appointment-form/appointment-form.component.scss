@@ -1,4 +1,23 @@
 .appointmentForm {
+    &-prompt {
+        margin-left: 20px;
+        margin-top: 45px;  
+        @media only screen and (max-width: 500px) {
+            font-size: 35px;
+          } 
+    }
+    &-cardWrapper {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+    }
+    &-timeWrapper {
+        display: flex;
+        flex-wrap: wrap;
+        border: lightgrey solid 1px;
+        border-radius: 10px;
+    }
     &-title {
         text-align: center;
     }
@@ -9,7 +28,7 @@
         width: 300px!important;
     }
     &-optionWrapper {
-        flex-direction: row;
+        flex-direction: column;
         display: flex;
         width: 100%!important;
         flex-wrap: wrap;
@@ -19,3 +38,7 @@
         text-align: center;
     }
 }
+
+::ng-deep .mat-step-header .mat-step-icon-selected, ::ng-deep .mat-step-header .mat-step-icon-state-edit{
+    background-color: #baba31; 
+ }

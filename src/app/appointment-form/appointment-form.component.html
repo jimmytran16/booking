@@ -1,37 +1,29 @@
   <div class="appointmentForm-title">Designer Nail Salon</div>
   <mat-stepper (selectionChange)="onStepChange($event)" linear #stepper>
     <mat-step [stepControl]="staffForm" [editable]="!isCompleted">
-      <form [formGroup]="staffForm">
-        <ng-template matStepLabel>Choose Staff</ng-template>
-        <div class="appointmentForm-title">Choose who to schedule with:</div>
-        <mat-chip-listbox formControlName="worker" class="mat-mdc-chip-set-stacked" aria-label="Available ">
-            <div class="appointmentForm-optionWrapper">
-              @for (staffName of staffNames; track staffName) {
-                <mat-chip-option class="appointmentForm-chipOption">{{staffName}}</mat-chip-option>
-              }
-            </div>
-          </mat-chip-listbox>
-        <div>
-          <button mat-button matStepperNext>Next</button>
-        </div>
-      </form>
+      <ng-template matStepLabel>Choose Professional</ng-template>
+      <h1 class="appointmentForm-prompt">Select professional</h1>
+      <div class="appointmentForm-cardWrapper">
+        @for (staffName of staffNames; track staffName) {
+          <app-professional-cards [selected]="staffForm.get('worker')?.value ?? ''" (click)="handleProfessionalSelection(staffName)" [name]="staffName"></app-professional-cards>
+        }
+      </div>
+      <div>
+        <button mat-button matStepperNext>Next</button>
+      </div>
     </mat-step>
-    <mat-step [stepControl]="serviceForm" [editable]="!isCompleted">
-      <form [formGroup]="serviceForm">
+    <mat-step [editable]="!isCompleted" [completed]="selectedServices.length > 0">
         <ng-template matStepLabel>Choose Service</ng-template>
-        <div class="appointmentForm-title">Choose Service(s):</div>
-        <mat-chip-listbox [multiple]="true" formControlName="services" class="mat-mdc-chip-set-stacked" aria-label="Available ">
+        <h1 class="appointmentForm-prompt">Select services</h1>
             <div class="appointmentForm-optionWrapper">
               @for (service of services; track service) {
-                <mat-chip-option [value]="service.name" class="appointmentForm-chipOption">{{ service.name }}-${{ service.cost }}-{{ service.required_time}} minutes</mat-chip-option>
+                <app-service-card [selected]="this.selectedServices.includes(service.name)" (click)="handleServicesSelection(service.name)" [name]="service.name" [price]="service.cost" [time]="service.required_time" ></app-service-card>
               }
-            </div>
-          </mat-chip-listbox>
+            </div>  
         <div>
           <button mat-button matStepperPrevious>Back</button>
           <button mat-button matStepperNext>Next</button>
         </div>
-      </form>
     </mat-step>
 
     <mat-step [stepControl]="timeForm" [editable]="!isCompleted">
@@ -46,15 +38,18 @@
             </mat-form-field> 
           </div>
           <ng-template matStepLabel>Choose Time</ng-template>
-        <div class="appointmentForm-title">Choose Time:</div>
-        <mat-spinner *ngIf="isLoading"></mat-spinner>
-          <mat-chip-listbox *ngIf="!isLoading" formControlName="time" class="mat-mdc-chip-set-stacked" aria-label="Available ">
-              <div class="appointmentForm-optionWrapper">
+          <h1 class="appointmentForm-prompt">Select time</h1>
+          <div style="display:flex;justify-content: center;">
+            <mat-spinner *ngIf="isLoading"></mat-spinner>
+          </div>
+          <!-- <mat-chip-listbox *ngIf="!isLoading" formControlName="time" class="mat-mdc-chip-set-stacked" aria-label="Available "> -->
+              <div *ngIf="!isLoading" class="appointmentForm-timeWrapper">
                 @for (availableTime of availableTimes; track availableTime) {
-                  <mat-chip-option [disabled]="isUnavailable(availableTime)" class="appointmentForm-chipOption">{{availableTime}}</mat-chip-option>
+                  <app-time-card (click)="handleTimeSelection(availableTime)" [time]="availableTime" [selected]="timeForm.get('time')?.value == availableTime"></app-time-card>
+                  <!-- <mat-chip-option [disabled]="isUnavailable(availableTime)" class="appointmentForm-chipOption">{{availableTime}}</mat-chip-option> -->
                 }
               </div>  
-            </mat-chip-listbox>
+            <!-- </mat-chip-listbox> -->
           <div>
             <button mat-button matStepperPrevious>Back</button>
             <button mat-button matStepperNext>Next</button>
